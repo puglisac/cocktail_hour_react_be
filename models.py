@@ -5,24 +5,27 @@ from sqlalchemy_serializer.serializer import SerializerMixin
 bcrypt = Bcrypt()
 db = SQLAlchemy()
 
+
 def connect_db(app):
     db.app = app
     db.init_app(app)
 
 # models go below
 
+
 class User(db.Model, SerializerMixin):
     """users info"""
-
+    serialize_rules = ('-saved_cocktails.user', '-password')
     __tablename__ = "users"
-    email = db.Column(db.Text, primary_key=True, nullable=False, unique=True) 
+    email = db.Column(db.Text, primary_key=True, nullable=False, unique=True)
     password = db.Column(db.Text, nullable=False,)
     dob = db.Column(db.DateTime, nullable=False)
-    saved_cocktails = db.relationship('Cocktail', secondary = "user_cocktails", backref = "user")
+    saved_cocktails = db.relationship(
+        'Cocktail', secondary="user_cocktails", backref="user")
 
     def save_cocktail(self, cocktail):
 
-        self.saved.append(cocktail)
+        self.saved_cocktails.append(cocktail)
         db.session.commit()
 
     @classmethod
@@ -31,7 +34,7 @@ class User(db.Model, SerializerMixin):
 
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
 
-        user = User(email = email, password = hashed_pwd, dob = dob)
+        user = User(email=email, password=hashed_pwd, dob=dob)
 
         db.session.add(user)
         return user
@@ -52,12 +55,12 @@ class User(db.Model, SerializerMixin):
 class Cocktail(db.Model, SerializerMixin):
     """cocktails info"""
 
-    __tablename__="cocktails"
+    __tablename__ = "cocktails"
 
     id = db.Column(db.Integer,
                    primary_key=True)
-    name = db.Column(db.String(80), nullable = False, unique=True)
-    drink_img_url = db.Column(db.String(), nullable = True)
+    name = db.Column(db.String(80), nullable=False)
+    drink_img_url = db.Column(db.String(), nullable=True)
 
 
 class UserCocktails(db.Model, SerializerMixin):
@@ -66,6 +69,8 @@ class UserCocktails(db.Model, SerializerMixin):
 
     __tablename__ = "user_cocktails"
 
-    cocktail_id = db.Column(db.Integer, db.ForeignKey('cocktails.id', ondelete = "CASCADE"), primary_key = True)
+    cocktail_id = db.Column(db.Integer, db.ForeignKey(
+        'cocktails.id', ondelete="CASCADE"), primary_key=True)
 
-    user_id = db.Column(db.Text, db.ForeignKey('users.email', ondelete = "CASCADE"), primary_key = True)
+    user_id = db.Column(db.Text, db.ForeignKey(
+        'users.email', ondelete="CASCADE"), primary_key=True)
