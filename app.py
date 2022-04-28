@@ -8,8 +8,10 @@ from flask import request, jsonify
 from sqlalchemy.exc import IntegrityError
 from models import User, db
 from flask_jwt_extended import (jwt_required, create_access_token)
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL', 'postgresql://@localhost:5433/cocktails_two')
